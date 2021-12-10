@@ -5,8 +5,14 @@ const jwt = require("jsonwebtoken");
 const User = require("./models/user");
 const bcrypt = require("bcryptjs");
 const auth=require("./middleware/auth")
+var cookieParser = require("cookie-parser");
+
 
 const app = express();
+app.use(express.json());
+app.use(cookieParser());
+
+
 
 app.get("/", (req, res) => {
   res.send("<h1>Hello from auth system</h1>");
@@ -83,11 +89,27 @@ app.post("/login", async (req, res) => {
 
       user.token = token;
       user.password = undefined;
-      return res.status(200).json(user);
-    }
-    //   console.log("chala");
-    else
+    //   return res.status(200).json(user);
 
+         // if you want to use cookies
+      const options = {
+        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+      };
+
+      res.status(200).cookie("token", token, options).json({
+        success: true,
+        token,
+        user,
+      });
+    }
+
+
+
+    
+    //   console.log("chala");
+  
+else
     return res.status(400).send("Incorrect email or password");
   } catch (error) {
     console.log(error);
